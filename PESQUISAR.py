@@ -69,9 +69,6 @@ def safe_load(df):
 # -----------------------
 # FUNÇÃO DE CÁLCULO DO NOME DA ABA DE BACKUP (ATUALIZADA)
 # -----------------------
-# -----------------------
-# FUNÇÃO DE CÁLCULO DO NOME DA ABA DE BACKUP (ATUALIZADA)
-# -----------------------
 def calculate_backup_sheet_name() -> str:
     # Obtém a data atual baseada no fuso horário de SP para evitar erros no servidor
     SAO_PAULO_TZ = pytz.timezone('America/Sao_Paulo')
@@ -90,6 +87,7 @@ def calculate_backup_sheet_name() -> str:
         days_since_friday = (today.weekday() - calendar.FRIDAY) % 7
         
         if today.weekday() in [calendar.SATURDAY, calendar.SUNDAY]:
+            # No fim de semana, a "última sexta" ainda é a da semana atual
             ultimo_dia_util = today - timedelta(days=days_since_friday)
         else:
             # Durante a semana (Ter-Sex), a "última sexta" relevante é a da semana anterior
