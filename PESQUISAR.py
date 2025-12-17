@@ -103,7 +103,7 @@ def calculate_backup_sheet_name() -> str:
 def load_sheets(today_str):
     gc = None
     try:
-        # --- LÓGICA DE AUTENTICAÇÃO AJUSTADA ---
+
         
         # 1. Tenta carregar credenciais das Secrets (para Streamlit Cloud)
         creds_json = st.secrets.get("google_sheets_service_account")
