@@ -69,11 +69,15 @@ def safe_load(df):
 # -----------------------
 # FUNÇÃO DE CÁLCULO DO NOME DA ABA DE BACKUP (ATUALIZADA)
 # -----------------------
+# -----------------------
+# FUNÇÃO DE CÁLCULO DO NOME DA ABA DE BACKUP (ATUALIZADA)
+# -----------------------
 def calculate_backup_sheet_name() -> str:
     # Obtém a data atual baseada no fuso horário de SP para evitar erros no servidor
     SAO_PAULO_TZ = pytz.timezone('America/Sao_Paulo')
     today = datetime.datetime.now(SAO_PAULO_TZ).date()
     
+    # Segunda-feira é 0, Sexta-feira é 4
     is_monday = today.weekday() == calendar.MONDAY
 
     if is_monday:
@@ -84,10 +88,8 @@ def calculate_backup_sheet_name() -> str:
         # Se não é segunda, precisamos achar a sexta-feira da SEMANA PASSADA
         # Calculamos quantos dias se passaram desde a última sexta
         days_since_friday = (today.weekday() - calendar.FRIDAY) % 7
-        print(days_since_friday)
         
         if today.weekday() in [calendar.SATURDAY, calendar.SUNDAY]:
-            # No fim de semana, a "última sexta" ainda é a da semana atual
             ultimo_dia_util = today - timedelta(days=days_since_friday)
         else:
             # Durante a semana (Ter-Sex), a "última sexta" relevante é a da semana anterior
@@ -98,9 +100,6 @@ def calculate_backup_sheet_name() -> str:
 
     # Retorna no formato exato das abas: "DD.MM a DD.MM"
     return f"{primeiro_dia_util.strftime('%d.%m')} a {ultimo_dia_util.strftime('%d.%m')}"
-# -----------------------
-# FUNÇÃO DE CARREGAMENTO DE DADOS (AJUSTADA PARA SECRETS/DEPLOY)
-# -----------------------
 
 @st.cache_data(ttl=300)
 def load_sheets(today_str):
