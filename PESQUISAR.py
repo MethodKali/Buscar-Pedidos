@@ -67,30 +67,36 @@ def safe_load(df):
     return df
 
 # -----------------------
-# FUNÇÃO DE CÁLCULO DO NOME DA ABA DE BACKUP (Mantida)
+# FUNÇÃO DE CÁLCULO DO NOME DA ABA DE BACKUP (ATUALIZADA)
 # -----------------------
 def calculate_backup_sheet_name() -> str:
-    today = date.today()
-    is_update_day = today.weekday() == calendar.MONDAY
+    # Obtém a data atual baseada no fuso horário de SP para evitar erros no servidor
+    SAO_PAULO_TZ = pytz.timezone('America/Sao_Paulo')
+    today = datetime.datetime.now(SAO_PAULO_TZ).date()
     
-    # ... (lógica de cálculo mantida)
-    if is_update_day:
-        last_friday = today - timedelta(days=3) 
-        end_date = last_friday
-    else:
-        days_since_last_friday = (today.weekday() - calendar.FRIDAY + 7) % 7 
-        if today.weekday() in [calendar.SATURDAY, calendar.SUNDAY]:
-            last_friday_passada = today - timedelta(days=days_since_last_friday) 
-        else:
-            last_friday_passada = today - timedelta(days=days_since_last_friday + 7)
-            
-        end_date = last_friday_passada - timedelta(days=7) 
+    is_monday = today.weekday() == calendar.MONDAY
 
-    ultimo_dia_util = end_date
+    if is_monday:
+        # Se hoje é segunda, o backup é da semana que terminou na sexta passada
+        # Sexta passada foi há 3 dias
+        ultimo_dia_util = today - timedelta(days=3)
+    else:
+        # Se não é segunda, precisamos achar a sexta-feira da SEMANA PASSADA
+        # Calculamos quantos dias se passaram desde a última sexta
+        days_since_friday = (today.weekday() - calendar.FRIDAY) % 7
+        
+        if today.weekday() in [calendar.SATURDAY, calendar.SUNDAY]:
+            # No fim de semana, a "última sexta" ainda é a da semana atual
+            ultimo_dia_util = today - timedelta(days=days_since_friday)
+        else:
+            # Durante a semana (Ter-Sex), a "última sexta" relevante é a da semana anterior
+            ultimo_dia_util = today - timedelta(days=days_since_friday + 7)
+
+    # A aba sempre compreende o intervalo de Segunda (4 dias antes da Sexta) a Sexta
     primeiro_dia_util = ultimo_dia_util - timedelta(days=4)
 
+    # Retorna no formato exato das abas: "DD.MM a DD.MM"
     return f"{primeiro_dia_util.strftime('%d.%m')} a {ultimo_dia_util.strftime('%d.%m')}"
-
 # -----------------------
 # FUNÇÃO DE CARREGAMENTO DE DADOS (AJUSTADA PARA SECRETS/DEPLOY)
 # -----------------------
