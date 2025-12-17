@@ -66,39 +66,25 @@ def safe_load(df):
 
     return df
 
-# -----------------------
-# FUNÇÃO DE CÁLCULO DO NOME DA ABA DE BACKUP (ATUALIZADA)
-# -----------------------
 def calculate_backup_sheet_name() -> str:
-    # Obtém a data atual baseada no fuso horário de SP para evitar erros no servidor
+    # 1. Ajuste de Fuso Horário
     SAO_PAULO_TZ = pytz.timezone('America/Sao_Paulo')
     today = datetime.datetime.now(SAO_PAULO_TZ).date()
     
-    # Segunda-feira é 0, Sexta-feira é 4
-    is_monday = today.weekday() == calendar.MONDAY
-
-    if is_monday:
-        # Se hoje é segunda, o backup é da semana que terminou na sexta passada
-        # Sexta passada foi há 3 dias
-        ultimo_dia_util = today - timedelta(days=3)
-    else:
-        # Se não é segunda, precisamos achar a sexta-feira da SEMANA PASSADA
-        # Calculamos quantos dias se passaram desde a última sexta
-        days_since_friday = (today.weekday() - calendar.FRIDAY) % 7
-        
-        if today.weekday() in [calendar.SATURDAY, calendar.SUNDAY]:
-            # No fim de semana, a "última sexta" ainda é a da semana atual
-            ultimo_dia_util = today - timedelta(days=days_since_friday)
-        else:
-            # Durante a semana (Ter-Sex), a "última sexta" relevante é a da semana anterior
-            ultimo_dia_util = today - timedelta(days=days_since_friday + 7)
-
-    # A aba sempre compreende o intervalo de Segunda (4 dias antes da Sexta) a Sexta
+    # 2. Encontrar a Segunda-feira da semana ATUAL
+    # weekday() retorna 0 para Segunda, 1 para Terça... 2 para Quarta.
+    dias_desde_segunda = today.weekday() 
+    segunda_esta_semana = today - timedelta(days=dias_desde_segunda)
+    
+    # 3. O "Backup" é sempre a semana anterior à segunda atual
+    # A sexta-feira passada é sempre 3 dias antes da segunda atual
+    ultimo_dia_util = segunda_esta_semana - timedelta(days=3)
+    
+    # O primeiro dia (segunda) daquela semana é 4 dias antes da sexta
     primeiro_dia_util = ultimo_dia_util - timedelta(days=4)
 
-    # Retorna no formato exato das abas: "DD.MM a DD.MM"
+    # Retorna o formato "08.12 a 12.12" (considerando o exemplo de hoje 17.12)
     return f"{primeiro_dia_util.strftime('%d.%m')} a {ultimo_dia_util.strftime('%d.%m')}"
-
 @st.cache_data(ttl=300)
 def load_sheets(today_str):
     gc = None
