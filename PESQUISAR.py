@@ -84,6 +84,7 @@ def calculate_backup_sheet_name() -> str:
         # Se não é segunda, precisamos achar a sexta-feira da SEMANA PASSADA
         # Calculamos quantos dias se passaram desde a última sexta
         days_since_friday = (today.weekday() - calendar.FRIDAY) % 7
+        print(days_since_friday)
         
         if today.weekday() in [calendar.SATURDAY, calendar.SUNDAY]:
             # No fim de semana, a "última sexta" ainda é a da semana atual
